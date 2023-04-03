@@ -11,7 +11,7 @@ import pyqtgraph as pg
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-data_path = Path(r"D:\data\spike-interface\testing\steve\1110925")
+data_path = Path(r"C:\data\spike_interface")
 run_name = "1110925_test_shank1"
 
 import spikeinterface.extractors as se
