@@ -75,7 +75,24 @@ def preprocess(base_path, sub_name, run_name, pp_steps=None):
 
         perform_preprocessing_step(step_num, pp_info, data, pp_step_names)
 
+    handle_bad_channels(data)
     return data
+
+
+def handle_bad_channels(data):
+    """
+    """
+    # good Q should BD detection be before or after pp?
+    # good Q should BD detection be before or after pp?
+    # good Q should BD detection be before or after pp?
+    # good Q should BD detection be before or after pp?
+    # good Q should BD detection be before or after pp?
+    bad_channels = spre.detect_bad_channels(data["0-raw"])  # good Q should BD detection be before or after pp?
+
+    message_user(f"The following channels were detected as dead / noise: {bad_channels[0]}\n"
+                 f"TODO: DO SOMETHING BETTER WITH THIS INFORMATION. SAVE IT SOMEHWERE\n"
+                 f"You may like to automatically remove bad channels by setting XXX as a preprocessing option\n"
+                 f"TODO: check how this is handled in SI")
 
 
 def perform_preprocessing_step(step_num, pp_info, data, pp_step_names):

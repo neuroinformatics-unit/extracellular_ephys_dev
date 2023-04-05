@@ -6,7 +6,7 @@ from preprocess import preprocess
 from visualise import visualise
 import numpy as np
 
-base_path = r"C:\data\spike_interface"
+base_path = r"/ceph/neuroinformatics/neuroinformatics/scratch/ece_ephys_learning"
 sub_name = "1110925"
 run_name = "1110925_test_shank1"
 
@@ -14,7 +14,6 @@ data = preprocess(base_path=base_path,
                   sub_name=sub_name,
                   run_name=run_name)
 
-# TODO: hide left axis on spikeinterface
 
 visualise(data,
           steps=["0"],
