@@ -6,6 +6,9 @@ from pathlib import Path
 import utils
 from collections import UserDict
 from collections.abc import ItemsView, KeysView, ValuesView
+import pickle  # TODO: explore cPickle
+import os
+import spikeinterface as si
 
 # 1) for now assume spikeglx data
 # 2) assume all gate, trigger, probe number are zero for now.
@@ -24,13 +27,15 @@ class Data(UserDict):
         self.base_path = Path(base_path)
         self.rawdata_path = self.base_path / "rawdata"
 
-        assert self.rawdata_path.is_dir(), "raw data must be in a folder rawdata that resides within base_path"
+        assert self.rawdata_path.is_dir(), f"No data found at {rawdata_path}. \n" \
+                                           f"Raw data must be in a folder rawdata that resides within base_path"
 
         self.sub_name = sub_name
         self.run_name = run_name
         self.run_level_path = None  # get with gate
+        self.preprocessed_output_path = None  # TODO: this is not optimal at all
         self.sorter_output_path = None
-
+        self.waveform_output_path = None
         self.pp_steps = pp_steps
         self.data = {"0-raw": None}
         self.opts = {"0-raw": None}  # sanity check for testing, is set in a extra loop
@@ -44,12 +49,41 @@ class Data(UserDict):
     def values(self) -> ValuesView:
         return self.data.values()
 
-    def set_sorter_output_path(self):
+    def set_preprocessing_output_path(self):
         assert self.run_level_path is not None, "must set run_level_path before sorter_output_path"
-        self.sorter_output_path = self.base_path / "derivatives" / "sorting" / self.run_level_path.relative_to(self.rawdata_path)
+        self.preprocessed_output_path =  self.base_path / "derivatives" / self.run_level_path.relative_to(self.rawdata_path) / "preprocessed"
+        self.preprocessed_data_class_path = self.preprocessed_output_path / "data_class.pkl"
+        self.preprocessed_binary_data_path = self.preprocessed_output_path / "si_recording"
+
+    def set_sorter_output_paths(self, sorter):
+        assert self.run_level_path is not None, "must set run_level_path before sorter_output_path"
+        self.sorter_output_path = self.base_path / "derivatives" / self.run_level_path.relative_to(self.rawdata_path) / f"{sorter}-sorting"
+        self.waveforms_output_path = self.sorter_output_path / "waveforms"
+        self.quality_metrics_path = self.sorter_output_path / "quality_metrics.csv"
+
+    def save_all_preprocessed_data(self):
+        self.save_preprocessed_binary()
+        self.save_data_class()
+
+    def save_preprocessed_binary(self):
+        # TODO: need to check path doesn't already exist? or SI do?
+        recording, __ = utils.get_dict_value_from_step_num(self, "last")
+        recording.save(folder=self.preprocessed_binary_data_path)
+
+    def load_preprocessed_binary(self):
+        return si.load_extractor(self.preprocessed_binary_data_path)
+
+    def save_data_class(self):
+        if not self.preprocessed_output_path.is_dir():
+            os.makedirs(self.preprocessed_output_path)
+
+        with open(self.preprocessed_data_class_path, "wb") as file:
+            pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
 
 def preprocess(base_path, sub_name, run_name, pp_steps=None):
     """
+    # note all LAZY
+
     TODO: currently only supports one subject. Easy to add more, accept list
     of sub names or search string. then add iterator over saving the data as so.
 
@@ -58,7 +92,7 @@ def preprocess(base_path, sub_name, run_name, pp_steps=None):
      # TODO: need to handle raw_data as top level path
     """
     if not pp_steps:
-        pp_steps = {"1": ["phase_shift", {}],
+        pp_steps = {"1": ["phase_shift", {}],  # TODO: move
                     "2": ["bandpass_filter", {"freq_min": 300, "freq_max": 6000}],
                     "3": ["common_reference", {"operator": "median", "reference": "global"}]
                    }
@@ -68,6 +102,7 @@ def preprocess(base_path, sub_name, run_name, pp_steps=None):
     data = Data(base_path, sub_name, run_name, pp_steps)
 
     data.run_level_path = data.rawdata_path / sub_name / (run_name + "_g0")
+    data.set_preprocessing_output_path()
 
     data["0-raw"] = se.read_spikeglx(folder_path=data.run_level_path, stream_id="imec0.ap", all_annotations=True)
 
@@ -89,10 +124,10 @@ def handle_bad_channels(data):
     # good Q should BD detection be before or after pp?
     bad_channels = spre.detect_bad_channels(data["0-raw"])  # good Q should BD detection be before or after pp?
 
-    message_user(f"The following channels were detected as dead / noise: {bad_channels[0]}\n"
-                 f"TODO: DO SOMETHING BETTER WITH THIS INFORMATION. SAVE IT SOMEHWERE\n"
-                 f"You may like to automatically remove bad channels by setting XXX as a preprocessing option\n"
-                 f"TODO: check how this is handled in SI")
+    utils.message_user(f"The following channels were detected as dead / noise: {bad_channels[0]}\n"
+                       f"TODO: DO SOMETHING BETTER WITH THIS INFORMATION. SAVE IT SOMEHWERE\n"
+                       f"You may like to automatically remove bad channels by setting XXX as a preprocessing option\n"
+                       f"TODO: check how this is handled in SI")
 
 
 def perform_preprocessing_step(step_num, pp_info, data, pp_step_names):
@@ -138,13 +173,10 @@ def check_and_sort_pp_steps(pp_steps):
 
     # check options... or better (?), validate a config file.
 
-    message_user(f"The preprocessing options dictionary is "
-                 f"{json.dumps(sorted_pp_steps, indent=4, sort_keys=True)}")
+    utils.message_user(f"\nThe preprocessing options dictionary is "
+                       f"{json.dumps(sorted_pp_steps, indent=4, sort_keys=True)}")
 
     return sorted_pp_steps, pp_step_names
 
 
-def message_user(message):
-    """
-    """
-    print(message)
+
