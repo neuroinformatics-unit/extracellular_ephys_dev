@@ -1,0 +1,168 @@
+{
+  "main": {
+    "id": "ba39de67ff8ee57b",
+    "type": "split",
+    "children": [
+      {
+        "id": "672a8c79099c7f2a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "88d39bf69ea8eff6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "spikeglx_catgt_metadata.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "5d70ca75f594faf1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "spikeglx_catgt_metadata.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "89c82ba4d62e06fc",
+    "type": "split",
+    "children": [
+      {
+        "id": "2eee225edf2aa31d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "58e6accbe6b1988f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "e507da54dc67bcf4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "50f7650112627bce",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c1e3ce9e5f0089b8",
+    "type": "split",
+    "children": [
+      {
+        "id": "eeda3eb987ff8914",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "91f27f4494c11f9d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "spikeglx_catgt_metadata.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "31d90cb8224cf305",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "spikeglx_catgt_metadata.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "60a0374a2afcbd28",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "f0393e52c9a5f084",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "spikeglx_catgt_metadata.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "5d70ca75f594faf1",
+  "lastOpenFiles": [
+    "catgt_manual.md",
+    "spikeglx_catgt_metadata.md",
+    "spikeglx_manual.md"
+  ]
+}
