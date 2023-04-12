@@ -14,10 +14,10 @@ traces = pd.read_csv(r"C:\fMRIData\git-repo\extracellular_ephys_dev\test_data.cs
 traces = traces.to_numpy()
 
 def plot_traces(traces):
-    plt.imshow(traces.T,  aspect='auto', cmap="RdBu", origin="lower", interpolation="nearest")
+    plt.imshow(traces.T,  aspect='auto', cmap="RdBu", origin="lower")
     plt.show()
 
-traces = traces[0:500, :]
+# traces = traces[0:500, :]
 
 plot_traces(traces)
 
@@ -42,21 +42,29 @@ norm = stats.norm(mean, std)
 traces_prob = np.empty(traces_work.shape)
 traces_prob.fill(np.nan)
 
-n = 10  # only even numbers allowed
-for col in range(traces_work.shape[1]):
-    print(col)
-    for row in range(traces_work.shape[0]):
+n = 10
+if False:
+    n = 10  # only even numbers allowed
+    for col in range(traces_work.shape[1]):
+        print(col)
+        for row in range(traces_work.shape[0]):
 
-        if row - int(n / 2) <= 0:
-            local_samples = traces_work[0:n, col]
-        elif traces_work.shape[0] - (row + int(n / 2)) <= 0:
-            local_samples = traces_work[traces_work.shape[0] - n:traces_work.shape[0], col]  # note this int rounds, note this is n/2:n/2-1
-        else:
-            local_samples = traces_work[row - int(n / 2): row + int(n / 2), col]
+            if row - int(n / 2) <= 0:
+                local_samples = traces_work[0:n, col]
+            elif traces_work.shape[0] - (row + int(n / 2)) <= 0:
+                local_samples = traces_work[traces_work.shape[0] - n:traces_work.shape[0], col]  # note this int rounds, note this is n/2:n/2-1
+            else:
+                local_samples = traces_work[row - int(n / 2): row + int(n / 2), col]
 
-        traces_prob[row, col] = np.sum(norm.logpdf(local_samples)) / n  # shit this takes ages!
+            traces_prob[row, col] = np.sum(norm.logpdf(local_samples)) / n  # shit this takes ages!
+
+traces_prob = -(traces_work - mean)**2 / (2 * std**2)
+from scipy import signal
+
+traces_prob = signal.convolve2d(traces_prob, np.ones(n)[:, np.newaxis], mode="same")
 
 plot_traces(traces_prob)
+
 
 x = 1 / np.abs(traces_prob)
 x = x / np.median(x)
