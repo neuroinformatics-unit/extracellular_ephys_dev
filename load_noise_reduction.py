@@ -8,18 +8,20 @@ import pandas as pd
 import numpy as np
 from scipy import ndimage
 from scipy import stats
+from scipy import signal
 
 traces = pd.read_csv(r"C:\fMRIData\git-repo\extracellular_ephys_dev\test_data.csv")
 
 traces = traces.to_numpy()
 
 def plot_traces(traces):
-    plt.imshow(traces.T,  aspect='auto', cmap="RdBu", origin="lower")
+    # plt.imshow(traces.T[:150, :4000],  aspect='auto', cmap="RdBu", origin="lower", interpolation="nearest")
+    plt.plot(traces.T[40, :2000])
     plt.show()
 
 # traces = traces[0:500, :]
 
-plot_traces(traces)
+# plot_traces(traces)
 
 
 # could spline interpolate before!
@@ -27,7 +29,7 @@ traces_work = traces - np.mean(traces, axis=0)
 # traces = traces / np.std(traces, ddof=1, axis=0)
 traces_work = ndimage.filters.gaussian_filter(traces_work, sigma=1)
 
-# plot_traces(traces)
+plot_traces(traces)
 
 low, high = np.percentile(traces_work.ravel(), (10, 90))
 print(low, high)
@@ -43,36 +45,33 @@ traces_prob = np.empty(traces_work.shape)
 traces_prob.fill(np.nan)
 
 n = 10
-if False:
-    n = 10  # only even numbers allowed
-    for col in range(traces_work.shape[1]):
-        print(col)
-        for row in range(traces_work.shape[0]):
-
-            if row - int(n / 2) <= 0:
-                local_samples = traces_work[0:n, col]
-            elif traces_work.shape[0] - (row + int(n / 2)) <= 0:
-                local_samples = traces_work[traces_work.shape[0] - n:traces_work.shape[0], col]  # note this int rounds, note this is n/2:n/2-1
-            else:
-                local_samples = traces_work[row - int(n / 2): row + int(n / 2), col]
-
-            traces_prob[row, col] = np.sum(norm.logpdf(local_samples)) / n  # shit this takes ages!
 
 traces_prob = -(traces_work - mean)**2 / (2 * std**2)
-from scipy import signal
+traces_prob = signal.convolve2d(traces_prob, np.ones((n, 1)), mode="same")
 
-traces_prob = signal.convolve2d(traces_prob, np.ones(n)[:, np.newaxis], mode="same")
+transform_prob = np.log(np.abs(traces_prob))
+demean_transform_prob = transform_prob - np.mean(transform_prob.ravel())
 
-plot_traces(traces_prob)
+x = np.linspace(np.min(demean_transform_prob.ravel()), np.max(demean_transform_prob.ravel()), 1000)
 
+top = 4  # cool this has to be even
+s = np.std(demean_transform_prob.ravel()) / 1.5
+y = np.exp((-(x - np.mean(demean_transform_prob.ravel()))**top) / (2 * s**top))  # (1 / np.sqrt(2 * np.pi * s**2)) *
+y = y / np.max(y)
 
-x = 1 / np.abs(traces_prob)
-x = x / np.median(x)
-x[x>1] = 1
+plt.plot(x, y)
+plt.hist(demean_transform_prob.ravel(), density=True, bins=1000)
+plt.show()
 
-traces -= traces * x
-plot_traces(traces)
+x = demean_transform_prob
+y = np.exp((-(x - np.mean(demean_transform_prob.ravel()))**top) / (2 * s**top))  # (1 / np.sqrt(2 * np.pi * s**2)) *
+y = y / np.max(y)
 
+# subtraction method
+plot_traces(traces - traces * y)
+
+# scale method (less robust)
+plot_traces(traces * 10**(1 - y))
 
 # interesting
 if False:
