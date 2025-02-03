@@ -4,44 +4,48 @@ import numpy as np
 from PySide6 import QtWidgets, QtGui, QtCore
 import pyqtgraph as pg
 import spikewrap as sw
+from spikewrap.utils import _utils
 
-# SpikeInterface provides some CatGT-like functionality but does not
-# capture all options, especially around gate and trigger concatenation.
-# Implement a CatGT reader ourselves for this.
+# Raw dat a plot as heatmap or line plot in PyQtGraph.
+# Use space to switch between plotting modes.
 
 from pathlib import Path
 
-data_path = Path(sw.get_example_data_path() / "rawdata" / "sub-001" / "ses-001" / "ephys")
-run_name = "run-001_g0_imec0"
+sub_path = sw.get_example_data_path() / "rawdata" / "sub-001"
+ses_name = "ses-001"
 
 import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 from spikeinterface.core import order_channels_by_depth
 
-run_level_path = data_path / run_name
+session = sw.Session(
+    sub_path,
+    ses_name,
+    "spikeglx",
+)
 
-rec = se.read_spikeglx(folder_path=run_level_path,
-                             stream_id="imec0.ap",
-                             all_annotations=True)
+session.preprocess("neuropixels+kilosort2_5", per_shank=True, concat_runs=True)
 
-fs = rec.get_sampling_frequency()
+# This is the first run, first shank, final preprocessing step (spikewrap holds
+# all intermediate preprocessing steps for visualisation if required).
+# In future this should have a nice getter.
+prepro_dict = session._runs[0]._preprocessed["0"]._data
+preprocesed_recording, _ = _utils._get_dict_value_from_step_num(prepro_dict, "last")
+
+# Get the raw data to plot
+fs = preprocesed_recording.get_sampling_frequency()
 start_t = int(0*fs)
 stop_t = int(0.25*fs)
 
-rec = spre.phase_shift(rec)
-rec = spre.bandpass_filter(rec, freq_min=300, freq_max=6000)
-rec = spre.common_reference(rec, operator="median", reference="global")
-
-y = rec.get_traces(return_scaled=False, start_frame=start_t, end_frame=stop_t)
+y = preprocesed_recording.get_traces(return_scaled=False, start_frame=start_t, end_frame=stop_t)
 x = np.linspace(start_t, stop_t - 1/fs, y.shape[0])
 
-order_f, order_r = order_channels_by_depth(recording=rec, dimensions=('x', 'y'))
+order_f, order_r = order_channels_by_depth(recording=preprocesed_recording, dimensions=('x', 'y'))
 
 y = y[:, order_f]
 y = y[:, :]
 y = (y - np.mean(y, axis=0)) / np.std(y, axis=0)
 
-# mean_channel_std = np.mean(np.std(y, axis=0))
 max_channel_amp = np.max(np.max(np.abs(y), axis=0))
 vspacing = max_channel_amp * 1.5
 
