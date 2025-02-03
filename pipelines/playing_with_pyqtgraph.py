@@ -2,21 +2,16 @@ import sys
 import pyqtgraph as pg
 import numpy as np
 from PySide6 import QtWidgets, QtGui, QtCore
-import pyqtgraph as pg
 import spikewrap as sw
 from spikewrap.utils import _utils
+from spikeinterface.core import order_channels_by_depth
 
 # Raw dat a plot as heatmap or line plot in PyQtGraph.
 # Use space to switch between plotting modes.
 
-from pathlib import Path
 
 sub_path = sw.get_example_data_path() / "rawdata" / "sub-001"
 ses_name = "ses-001"
-
-import spikeinterface.extractors as se
-import spikeinterface.preprocessing as spre
-from spikeinterface.core import order_channels_by_depth
 
 session = sw.Session(
     sub_path,
