@@ -3,33 +3,30 @@ import pyqtgraph as pg
 import numpy as np
 from PySide6 import QtWidgets, QtGui, QtCore
 import pyqtgraph as pg
+import spikewrap as sw
 
 # SpikeInterface provides some CatGT-like functionality but does not
 # capture all options, especially around gate and trigger concatenation.
 # Implement a CatGT reader ourselves for this.
 
 from pathlib import Path
-import matplotlib.pyplot as plt
 
-data_path = Path(r"C:\data\spike_interface\rawdata\1110925")
-run_name = "1110925_test_shank1"
+data_path = Path(sw.get_example_data_path() / "rawdata" / "sub-001" / "ses-001" / "ephys")
+run_name = "run-001_g0_imec0"
 
 import spikeinterface.extractors as se
-import spikeinterface.widgets as sw
 import spikeinterface.preprocessing as spre
 from spikeinterface.core import order_channels_by_depth
-import spikeinterface.full as si  # TODO
-import matplotlib
 
-run_level_path = data_path / (run_name + "_g0")
+run_level_path = data_path / run_name
 
 rec = se.read_spikeglx(folder_path=run_level_path,
                              stream_id="imec0.ap",
                              all_annotations=True)
 
 fs = rec.get_sampling_frequency()
-start_t = int(25*fs)
-stop_t = int(25.5*fs)
+start_t = int(0*fs)
+stop_t = int(0.25*fs)
 
 rec = spre.phase_shift(rec)
 rec = spre.bandpass_filter(rec, freq_min=300, freq_max=6000)
